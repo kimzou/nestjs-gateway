@@ -10,7 +10,9 @@ class AuthenticatedDataSource extends RemoteGraphQLDataSource {
   async willSendRequest({ request, context }) {
     // console.log('------ willSendRequest context?.req?.cookies', context?.req?.cookies) // cookies are set
     // console.log('------ willSendRequest context.req.headers', context.req?.headers) // session cookie not set, (appears in browser if refresh)
-    console.log('------ willSendRequest context.jwt', context?.jwt)
+    console.log('------ willSendRequest context.jwt', context?.userUid)
+    request.http.headers.set('x-user-uid', context?.userUid)
+
     // const session = context?.session;
     // if (session) {
     //   admin
@@ -35,10 +37,11 @@ class AuthenticatedDataSource extends RemoteGraphQLDataSource {
 
     // set response header origin to the request origin (CORS errors)
     context?.res?.set('Access-Control-Allow-Origin', context.req?.headers.origin)
+
     // append the cookie to the response to see it in the browser
     const sessionCookie = response.http.headers.get('set-cookie')
     if (sessionCookie) context.res.append('set-cookie', sessionCookie);
-    // console.log('++++++ didResponse context?.res', context?.res)
+    console.log('++++++ didResponse context?.res', context?.res)
 
     return response;
   }
@@ -103,14 +106,12 @@ class BuildServiceModule {}
             const session = req.cookies?.['session-cookie']
             console.log('req.cookies', req.cookies)
             let decodedClaims: admin.auth.DecodedIdToken
-            let userId: string;
             if (session) {
               try {
                 decodedClaims = await admin
                   .auth()
                   .verifySessionCookie(session, true /** checkRevoked */)
                 console.log({decodedClaims})
-                console.log('admin.auth().getUser(decodedClaims.uid)', await admin.auth().getUser(decodedClaims.uid))
               } catch (error) {
                 new AuthenticationError(error)
               }
@@ -119,7 +120,7 @@ class BuildServiceModule {}
             return {
               req,
               res,
-              userId: decodedClaims?.uid
+              userUid: decodedClaims?.uid
             }
           }
         },
