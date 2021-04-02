@@ -2,11 +2,9 @@ import { NestFactory } from '@nestjs/core';
 import * as cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import * as admin from 'firebase-admin';
-import * as csurf from 'csurf';
 import * as helmet from 'helmet';
 
 import { AppModule } from './app.module';
-import { AuthGuard } from './auth.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -24,7 +22,7 @@ async function bootstrap() {
     credentials: true,
     origin: ['http://localhost:3000', 'http://localhost:2000']
   })
-    // gives no access to gateway playground
+  // gives no access to gateway playground
   // app.enableCors({
   //   origin: (origin, callback) => {
   //     console.log('!!!! ', {origin})
@@ -41,23 +39,6 @@ async function bootstrap() {
   //   credentials: true,
   // })
   app.use(cookieParser());
-  // must be after cookieParser
-  app.use(csurf({
-    // value: (req) => {
-    //   // get from context.req ?
-    //   const headers  = req.headers
-    //   console.log('---------------', {headers})
-    //   console.log('in middleware req.csrfToken()', req.csrfToken())
-
-    //   return req.csrfToken()
-    // },
-    // cookie: {
-    //   httpOnly: true,
-    //   // sameSite: true
-    // }
-    cookie: true
-  }));
-  app.useGlobalGuards(new AuthGuard());
 
   await app.listen(3001);
 }

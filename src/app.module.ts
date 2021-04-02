@@ -29,14 +29,13 @@ class BuildServiceModule {}
         gateway: {
           serviceList: [
             { name: 'users', url: 'http://localhost:4000/graphql' },
-            { name: 'posts', url: 'http://localhost:4001/graphql' },
             { name: 'auth', url: 'http://localhost:4002/graphql' }
+            // { name: 'posts', url: 'http://localhost:4001/graphql' },
           ],
         },
         server: {
           context: async ({ req, res }) => {
             // console.log('%%%%% context')
-            // console.log('in context req.csrfToken()', req.csrfToken())
             const session = req.cookies?.['session-cookie']
             // console.log('req.cookies', req.cookies)
             let decodedClaims: admin.auth.DecodedIdToken
@@ -51,14 +50,11 @@ class BuildServiceModule {}
               }
             }
 
-            res.cookie('csrf-token', req.csrfToken())
-
             return {
               req,
               res,
               role: decodedClaims?.role,
               id: decodedClaims?.id,
-              // csrfToken: req.csrfToken()
             }
           }
         },
